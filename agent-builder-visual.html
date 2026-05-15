@@ -65,7 +65,7 @@ body{background:#fff;font-family:var(--sans);overflow:hidden}
 .ab-nav.on svg{stroke:var(--green)}
 
 /* ── Main 500px ──────────────────────────────────────────── */
-.ab-main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.ab-main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;height:100%}
 
 /* ════ PHASE 1: CHAT ════ */
 .ab-chat{
@@ -89,7 +89,7 @@ body{background:#fff;font-family:var(--sans);overflow:hidden}
 }
 
 .ab-msgs{
-  flex:1;overflow:hidden;padding:8px 10px;
+  flex:1;min-height:0;overflow:hidden;padding:8px 10px;
   display:flex;flex-direction:column;gap:7px;
 }
 .ab-msg{
@@ -282,7 +282,7 @@ body{background:#fff;font-family:var(--sans);overflow:hidden}
     <!-- Sidebar -->
     <div class="ab-sidebar">
       <div class="ab-logo" style="background:none;padding:0">
-        <img src="assets/retainsure-icon.png" alt="RetainSure" style="width:24px;height:24px;object-fit:contain"/>
+        <img src="https://cdn.prod.website-files.com/69fd4b6acc037ef6b6caa7f9/6a06bceabf76a0279dc8f9cf_retainsure-icon.png" alt="RetainSure" style="width:24px;height:24px;object-fit:contain"/>
       </div>
       <div class="ab-nav"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg></div>
       <div class="ab-nav on"><svg viewBox="0 0 16 16"><polygon points="8,2 14,14 2,14"/></svg></div>
