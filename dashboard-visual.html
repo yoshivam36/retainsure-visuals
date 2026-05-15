@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dashboard Visual</title>
+<style>
+:root{
+  --green:#2D6B4A;--mint:#00B368;--mint-bg:#E8F7EF;--mint-ring:#B0E8C8;
+  --sans:"Manrope","Segoe UI",system-ui,sans-serif;
+  --mono:"Lilex","SF Mono","Fira Code",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#D1D5DB;display:flex;align-items:center;
+  justify-content:center;min-height:100vh;font-family:var(--sans)}
+
+/* ── Card shell ──────────────────────────────────────────── */
+.feat-card{background:#fff;border:1px solid #E5E7EB;border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 4px 6px -1px rgba(0,0,0,.08),0 2px 4px -1px rgba(0,0,0,.04);
+  width:540px}
+.feat-bar{display:flex;align-items:center;gap:8px;
+  padding:10px 14px;background:#F9FAFB;border-bottom:1px solid #E5E7EB}
+.feat-dots{display:flex;gap:5px}
+.feat-dot{width:9px;height:9px;border-radius:50%;background:#E5E7EB}
+.feat-url{flex:1;margin-left:8px;height:22px;border-radius:6px;
+  background:#fff;border:1px solid #E5E7EB;
+  display:flex;align-items:center;padding:0 10px;
+  font-family:var(--mono);font-size:10px;color:#9CA3AF}
+
+/* ── Canvas — clips both pages ───────────────────────────── */
+.db-canvas{width:100%;height:340px;position:relative;overflow:hidden}
+
+/* ── Pages ───────────────────────────────────────────────── */
+.db-page{
+  position:absolute;inset:0;background:#F9FAFB;
+  display:flex;flex-direction:column;
+  transition:transform .65s cubic-bezier(0.22,1,0.36,1);
+}
+.db-page-table{transform:translateX(0)}
+.db-page-table.exit{transform:translateX(-100%)}
+.db-page-account{transform:translateX(102%)}
+.db-page-account.enter{transform:translateX(0)}
+
+/* ════════════════════════════════════════════════════════════
+   PAGE 1 — TABLE
+════════════════════════════════════════════════════════════ */
+
+/* Stat bar */
+.db-stats{display:flex;gap:0;border-bottom:1px solid #E5E7EB;
+  background:#fff;flex-shrink:0}
+.db-stat{flex:1;padding:9px 13px;border-right:1px solid #E5E7EB;
+  opacity:0;transform:translateY(-6px);
+  transition:opacity .4s ease,transform .4s ease}
+.db-stat:last-child{border-right:none}
+.db-stat.vis{opacity:1;transform:translateY(0)}
+.db-stat-label{font-size:9px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;color:#9CA3AF;margin-bottom:2px}
+.db-stat-val{font-size:17px;font-weight:800;letter-spacing:-0.03em;
+  color:#111827;line-height:1;display:flex;align-items:baseline;gap:2px}
+.db-stat-val span{font-size:10px;font-weight:600;color:#6B7280}
+.db-stat-tag{font-size:9px;font-weight:700;padding:2px 6px;
+  border-radius:20px;margin-top:3px;display:inline-block}
+.tag-g{background:#DCFCE7;color:#16A34A}
+.tag-r{background:#FEE2E2;color:#DC2626}
+.tag-y{background:#FEF9C3;color:#CA8A04}
+
+/* Table */
+.db-table{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.db-thead{display:grid;
+  grid-template-columns:1.6fr .9fr 1.1fr .8fr .9fr;
+  padding:0 14px;height:28px;align-items:center;
+  border-bottom:1px solid #E5E7EB;background:#F9FAFB;flex-shrink:0}
+.db-th{font-size:9px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;color:#9CA3AF}
+.db-tbody{flex:1;display:flex;flex-direction:column;padding:2px 0}
+
+.db-row{display:grid;
+  grid-template-columns:1.6fr .9fr 1.1fr .8fr .9fr;
+  padding:0 14px;height:44px;align-items:center;
+  border-bottom:1px solid #F3F4F6;
+  opacity:0;transform:translateX(-8px);
+  transition:opacity .4s ease,transform .4s ease,background .3s ease;
+  position:relative}
+.db-row:last-child{border-bottom:none}
+.db-row.vis{opacity:1;transform:translateX(0)}
+.db-row.at-risk{background:rgba(254,226,226,.35)}
+.db-row.at-risk.pulse{animation:row-pulse 1.4s ease-in-out 2}
+@keyframes row-pulse{
+  0%,100%{background:rgba(254,226,226,.35)}
+  50%    {background:rgba(254,226,226,.8)}
+}
+
+.db-cell-company{display:flex;flex-direction:column;gap:2px}
+.db-company-name{font-size:12px;font-weight:700;color:#111827}
+.db-company-sub{font-size:9px;color:#9CA3AF;font-weight:500}
+
+.db-cell-health{display:flex;flex-direction:column;gap:3px}
+.db-health-num{font-size:10px;font-weight:700;color:#374151}
+.db-health-track{height:4px;background:#E5E7EB;border-radius:2px;overflow:hidden}
+.db-health-fill{height:100%;width:0;border-radius:2px;
+  transition:width 1.1s cubic-bezier(0.22,1,0.36,1)}
+
+.db-mrr{font-size:12px;font-weight:700;color:#111827}
+.db-renewal{font-size:11px;font-weight:600;color:#6B7280}
+.db-badge{font-size:9px;font-weight:700;padding:3px 8px;
+  border-radius:20px;display:inline-block;white-space:nowrap}
+.db-action{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  font-size:10px;font-weight:700;padding:5px 12px;border-radius:8px;
+  background:var(--green);color:#fff;border:none;cursor:default;
+  opacity:0;transition:opacity .4s ease;white-space:nowrap}
+.db-action.vis{opacity:1}
+
+/* ════════════════════════════════════════════════════════════
+   PAGE 2 — ACCOUNT DETAIL
+════════════════════════════════════════════════════════════ */
+.dba-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* Back bar */
+.dba-back-bar{
+  height:36px;flex-shrink:0;
+  background:#fff;border-bottom:1px solid #E5E7EB;
+  display:flex;align-items:center;padding:0 16px;gap:6px;
+  font-size:11px;font-weight:600;color:#9CA3AF;
+}
+.dba-back-arrow{font-size:13px}
+.dba-back-sep{color:#D1D5DB}
+.dba-back-current{color:#374151;font-weight:700}
+
+/* Account header */
+.dba-header{
+  background:#fff;border-bottom:1px solid #E5E7EB;
+  padding:10px 16px;flex-shrink:0;
+  display:flex;align-items:center;gap:10px;
+  opacity:0;transform:translateY(-4px);
+  transition:opacity .4s ease,transform .4s ease;
+}
+.dba-header.vis{opacity:1;transform:translateY(0)}
+.dba-header-name{font-size:15px;font-weight:800;color:#111827;letter-spacing:-.02em}
+.dba-header-sub{font-size:10px;color:#9CA3AF;font-weight:500;margin-top:1px}
+.dba-risk-badge{
+  margin-left:auto;font-size:9px;font-weight:700;
+  padding:3px 10px;border-radius:20px;
+  background:#FEE2E2;color:#DC2626;white-space:nowrap;
+}
+
+/* Health section */
+.dba-health-section{
+  padding:10px 16px;background:#fff;
+  border-bottom:1px solid #E5E7EB;flex-shrink:0;
+  opacity:0;transition:opacity .4s ease .1s;
+}
+.dba-health-section.vis{opacity:1}
+.dba-health-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.dba-health-big{font-size:26px;font-weight:800;color:#DC2626;letter-spacing:-.04em;line-height:1}
+.dba-health-denom{font-size:13px;color:#9CA3AF;font-weight:600}
+.dba-health-label{font-size:10px;color:#6B7280;font-weight:600;margin-left:auto}
+.dba-health-track{height:6px;background:#E5E7EB;border-radius:3px;overflow:hidden}
+.dba-health-fill{height:100%;width:0;border-radius:3px;
+  background:linear-gradient(90deg,#EF4444,#F87171);
+  transition:width 1s cubic-bezier(0.22,1,0.36,1)}
+
+/* Metrics grid */
+.dba-metrics{
+  display:grid;grid-template-columns:1fr 1fr 1fr 1fr;
+  gap:0;border-bottom:1px solid #E5E7EB;flex-shrink:0;
+}
+.dba-metric{
+  padding:8px 14px;border-right:1px solid #E5E7EB;
+  opacity:0;transform:translateY(6px);
+  transition:opacity .35s ease,transform .35s ease;
+}
+.dba-metric:last-child{border-right:none}
+.dba-metric.vis{opacity:1;transform:translateY(0)}
+.dba-metric-label{font-size:9px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:#9CA3AF;margin-bottom:3px}
+.dba-metric-val{font-size:13px;font-weight:800;color:#111827}
+.dba-metric-val.red{color:#DC2626}
+.dba-metric-val.amber{color:#CA8A04}
+
+/* Risk reasons */
+.dba-risks{
+  flex:1;padding:10px 16px;display:flex;flex-direction:column;gap:0;
+  overflow:hidden;
+}
+.dba-risks-title{
+  font-size:9px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;color:#9CA3AF;margin-bottom:8px;
+  opacity:0;transition:opacity .3s ease;
+}
+.dba-risks-title.vis{opacity:1}
+.dba-risk-item{
+  display:flex;align-items:flex-start;gap:8px;
+  padding:6px 0;border-bottom:1px solid #F3F4F6;
+  opacity:0;transform:translateX(6px);
+  transition:opacity .35s ease,transform .35s ease;
+}
+.dba-risk-item:last-child{border-bottom:none}
+.dba-risk-item.vis{opacity:1;transform:translateX(0)}
+.dba-risk-dot{width:6px;height:6px;border-radius:50%;
+  flex-shrink:0;margin-top:4px}
+.dba-risk-text{font-size:11px;font-weight:500;color:#374151;line-height:1.5}
+.dba-risk-source{font-size:9px;color:#9CA3AF;font-weight:600;
+  display:block;margin-top:1px}
+
+/* Action buttons */
+.dba-actions{
+  display:flex;gap:8px;padding:10px 16px;
+  background:#fff;border-top:1px solid #E5E7EB;flex-shrink:0;
+  opacity:0;transform:translateY(4px);
+  transition:opacity .4s ease,transform .4s ease;
+}
+.dba-actions.vis{opacity:1;transform:translateY(0)}
+.dba-btn{
+  flex:1;height:32px;border-radius:8px;border:none;
+  font-family:var(--sans);font-size:11px;font-weight:700;
+  cursor:default;
+}
+.dba-btn.primary{background:var(--green);color:#fff}
+.dba-btn.secondary{
+  background:#fff;color:var(--green);
+  border:1.5px solid var(--mint-ring);
+}
+</style>
+</head>
+<body>
+
+<div class="feat-card">
+  <div class="feat-bar">
+    <div class="feat-dots">
+      <div class="feat-dot"></div>
+      <div class="feat-dot"></div>
+      <div class="feat-dot"></div>
+    </div>
+    <div class="feat-url" id="feat-url">app.retainsure.com / accounts</div>
+  </div>
+
+  <div class="db-canvas">
+
+    <!-- ── PAGE 1: Table ──────────────────────────────────── -->
+    <div class="db-page db-page-table" id="db-page-table">
+
+      <div class="db-stats">
+        <div class="db-stat" id="st0">
+          <div class="db-stat-label">NRR</div>
+          <div class="db-stat-val"><span id="nrr-val">0</span><span>%</span></div>
+          <div class="db-stat-tag tag-g" id="nrr-tag" style="opacity:0">↑ vs last qtr</div>
+        </div>
+        <div class="db-stat" id="st1">
+          <div class="db-stat-label">Accounts</div>
+          <div class="db-stat-val">32<span>total</span></div>
+          <div class="db-stat-tag tag-y">3 need attention</div>
+        </div>
+        <div class="db-stat" id="st2">
+          <div class="db-stat-label">ARR at Risk</div>
+          <div class="db-stat-val">$42.8<span>K</span></div>
+          <div class="db-stat-tag tag-r">Act now</div>
+        </div>
+        <div class="db-stat" id="st3">
+          <div class="db-stat-label">Renewals</div>
+          <div class="db-stat-val">4<span>this month</span></div>
+          <div class="db-stat-tag tag-y">Earliest: 28d</div>
+        </div>
+      </div>
+
+      <div class="db-table">
+        <div class="db-thead">
+          <div class="db-th">Account</div>
+          <div class="db-th">Health</div>
+          <div class="db-th">MRR</div>
+          <div class="db-th">Renewal</div>
+          <div class="db-th">Status</div>
+        </div>
+        <div class="db-tbody" id="db-tbody"></div>
+      </div>
+
+    </div>
+
+    <!-- ── PAGE 2: Account Detail ─────────────────────────── -->
+    <div class="db-page db-page-account" id="db-page-account">
+
+      <div class="dba-back-bar">
+        <span class="dba-back-arrow">←</span>
+        <span>All Accounts</span>
+        <span class="dba-back-sep">/</span>
+        <span class="dba-back-current">Acme Corp</span>
+      </div>
+
+      <div class="dba-wrap">
+
+        <!-- Header -->
+        <div class="dba-header" id="dba-header">
+          <div>
+            <div class="dba-header-name">Acme Corp</div>
+            <div class="dba-header-sub">Enterprise · 42 seats · Customer since 2022</div>
+          </div>
+          <div class="dba-risk-badge">⚠ High Risk</div>
+        </div>
+
+        <!-- Health score -->
+        <div class="dba-health-section" id="dba-health">
+          <div class="dba-health-row">
+            <div class="dba-health-big">34</div>
+            <div class="dba-health-denom">/ 100</div>
+            <div class="dba-health-label">Health Score · dropped 38 pts in 14 days</div>
+          </div>
+          <div class="dba-health-track">
+            <div class="dba-health-fill" id="dba-hfill"></div>
+          </div>
+        </div>
+
+        <!-- Metrics -->
+        <div class="dba-metrics">
+          <div class="dba-metric" id="dm0">
+            <div class="dba-metric-label">MRR</div>
+            <div class="dba-metric-val">$24,000</div>
+          </div>
+          <div class="dba-metric" id="dm1">
+            <div class="dba-metric-label">Renewal</div>
+            <div class="dba-metric-val amber">Jun 14</div>
+          </div>
+          <div class="dba-metric" id="dm2">
+            <div class="dba-metric-label">Last Login</div>
+            <div class="dba-metric-val red">18d ago</div>
+          </div>
+          <div class="dba-metric" id="dm3">
+            <div class="dba-metric-label">Tickets</div>
+            <div class="dba-metric-val amber">2 open</div>
+          </div>
+        </div>
+
+        <!-- Risk reasons -->
+        <div class="dba-risks">
+          <div class="dba-risks-title" id="dba-risks-title">Why flagged</div>
+          <div class="dba-risk-item" id="dr0">
+            <div class="dba-risk-dot" style="background:#EF4444"></div>
+            <div>
+              <span class="dba-risk-text">Usage dropped 38% in the last 30 days</span>
+              <span class="dba-risk-source">Amplitude · Feature adoption data</span>
+            </div>
+          </div>
+          <div class="dba-risk-item" id="dr1">
+            <div class="dba-risk-dot" style="background:#EF4444"></div>
+            <div>
+              <span class="dba-risk-text">No team login in 18 days — gone quiet</span>
+              <span class="dba-risk-source">Product analytics · Session data</span>
+            </div>
+          </div>
+          <div class="dba-risk-item" id="dr2">
+            <div class="dba-risk-dot" style="background:#F59E0B"></div>
+            <div>
+              <span class="dba-risk-text">2 support tickets unresolved since last week</span>
+              <span class="dba-risk-source">Zendesk · Support queue</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="dba-actions" id="dba-actions">
+          <button class="dba-btn primary">Schedule Call</button>
+          <button class="dba-btn secondary">Draft Renewal Email</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  const ACCOUNTS = [
+    { name:'Acme Corp',       sub:'Enterprise · 42 seats', health:34, hcolor:'#EF4444', mrr:'$24,000', renewal:'Jun 14', badge:'At risk', badgeClass:'tag-r', atRisk:true  },
+    { name:'Northstar',       sub:'Growth · 18 seats',     health:72, hcolor:'#F59E0B', mrr:'$11,200', renewal:'Aug 3',  badge:'Healthy', badgeClass:'tag-g', atRisk:false },
+    { name:'Orbit Analytics', sub:'Startup · 9 seats',     health:88, hcolor:'#16A34A', mrr:'$6,400',  renewal:'Sep 22',badge:'Healthy', badgeClass:'tag-g', atRisk:false },
+    { name:'Pulsar.io',       sub:'Growth · 14 seats',     health:41, hcolor:'#F59E0B', mrr:'$9,200',  renewal:'Jun 28',badge:'Watch',   badgeClass:'tag-y', atRisk:false },
+    { name:'Bluewave Labs',   sub:'Enterprise · 31 seats', health:79, hcolor:'#16A34A', mrr:'$19,600', renewal:'Oct 11',badge:'Healthy', badgeClass:'tag-g', atRisk:false },
+  ];
+
+  const tbody  = document.getElementById('db-tbody');
+  const nrrVal = document.getElementById('nrr-val');
+  const nrrTag = document.getElementById('nrr-tag');
+  const urlEl  = document.getElementById('feat-url');
+
+  const T = [];
+  const s = (fn,d) => T.push(setTimeout(fn,d));
+  const wait = ms => new Promise(r => s(r,ms));
+
+  function countUp(el, target, dur){
+    return new Promise(res => {
+      const t0 = performance.now();
+      function frame(now){
+        const p = Math.min((now-t0)/dur,1);
+        const e = 1 - Math.pow(1-p,3);
+        el.textContent = Math.round(e*target);
+        p < 1 ? requestAnimationFrame(frame) : (el.textContent=target, res());
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  function buildRows(){
+    tbody.innerHTML = '';
+    return ACCOUNTS.map(acc => {
+      const row = document.createElement('div');
+      row.className = 'db-row' + (acc.atRisk ? ' at-risk' : '');
+      row.innerHTML = `
+        <div class="db-cell-company">
+          <span class="db-company-name">${acc.name}</span>
+          <span class="db-company-sub">${acc.sub}</span>
+        </div>
+        <div class="db-cell-health">
+          <span class="db-health-num">${acc.health}/100</span>
+          <div class="db-health-track">
+            <div class="db-health-fill" style="background:${acc.hcolor}" data-w="${acc.health}%"></div>
+          </div>
+        </div>
+        <div class="db-mrr">${acc.mrr}</div>
+        <div class="db-renewal">${acc.renewal}</div>
+        <div>
+          <span class="db-badge ${acc.badgeClass}" id="${acc.atRisk?'risk-badge':''}">${acc.badge}</span>
+          ${acc.atRisk ? '<button class="db-action" id="db-action-btn">View Account →</button>' : ''}
+        </div>`;
+      tbody.appendChild(row);
+      return row;
+    });
+  }
+
+  /* Reset ALL state */
+  function reset(){
+    T.forEach(clearTimeout); T.length = 0;
+
+    // Page 1
+    document.getElementById('db-page-table').classList.remove('exit');
+    document.getElementById('db-page-account').classList.remove('enter');
+    document.querySelector('.db-canvas').style.opacity = '1';
+    document.querySelector('.db-canvas').style.transition = '';
+    urlEl.textContent = 'app.retainsure.com / accounts';
+
+    ['st0','st1','st2','st3'].forEach(id =>
+      document.getElementById(id).classList.remove('vis'));
+    nrrVal.textContent = '0';
+    nrrTag.style.opacity = '0';
+
+    // Page 2
+    document.getElementById('dba-header').classList.remove('vis');
+    document.getElementById('dba-health').classList.remove('vis');
+    document.getElementById('dba-hfill').style.width = '0';
+    ['dm0','dm1','dm2','dm3'].forEach(id =>
+      document.getElementById(id).classList.remove('vis'));
+    document.getElementById('dba-risks-title').classList.remove('vis');
+    ['dr0','dr1','dr2'].forEach(id =>
+      document.getElementById(id).classList.remove('vis'));
+    document.getElementById('dba-actions').classList.remove('vis');
+  }
+
+  async function run(){
+    reset();
+    const rows = buildRows();
+
+    /* ── Phase 1: stats ────────────────────────────────────── */
+    for(let i=0;i<4;i++) s(()=>document.getElementById('st'+i).classList.add('vis'), i*140);
+    await wait(700);
+    await countUp(nrrVal, 118, 950);
+    nrrTag.style.transition = 'opacity .4s ease';
+    nrrTag.style.opacity = '1';
+    await wait(400);
+
+    /* ── Phase 2: rows slide in ────────────────────────────── */
+    for(let i=0;i<rows.length;i++){
+      s(()=>{
+        rows[i].classList.add('vis');
+        setTimeout(()=>{
+          const fill = rows[i].querySelector('.db-health-fill');
+          if(fill) fill.style.width = fill.dataset.w;
+        }, 200);
+      }, i*220);
+    }
+    await wait(rows.length*220 + 600);
+
+    /* ── Phase 3: at-risk row pulses ───────────────────────── */
+    const atRiskRow = rows[0];
+    atRiskRow.classList.add('pulse');
+    await wait(600);
+
+    /* ── Phase 4: action button appears ───────────────────── */
+    const riskBadge = document.getElementById('risk-badge');
+    if(riskBadge){ riskBadge.style.transition='opacity .3s ease'; riskBadge.style.opacity='0'; }
+    await wait(300);
+    const actionBtn = document.getElementById('db-action-btn');
+    if(actionBtn) actionBtn.classList.add('vis');
+    await wait(1200);
+
+    /* ── Phase 5: navigate to account detail ──────────────── */
+    urlEl.textContent = 'app.retainsure.com / accounts / acme-corp';
+    document.getElementById('db-page-table').classList.add('exit');
+    document.getElementById('db-page-account').classList.add('enter');
+    await wait(700);
+
+    /* ── Phase 6: account detail animates in ─────────────── */
+    document.getElementById('dba-header').classList.add('vis');
+    await wait(200);
+    document.getElementById('dba-health').classList.add('vis');
+    await wait(200);
+    document.getElementById('dba-hfill').style.width = '34%';
+    await wait(300);
+
+    // Metrics stagger
+    for(let i=0;i<4;i++) s(()=>document.getElementById('dm'+i).classList.add('vis'), i*100);
+    await wait(700);
+
+    // Risk reasons
+    document.getElementById('dba-risks-title').classList.add('vis');
+    await wait(200);
+    for(let i=0;i<3;i++) s(()=>document.getElementById('dr'+i).classList.add('vis'), i*160);
+    await wait(800);
+
+    // Actions
+    document.getElementById('dba-actions').classList.add('vis');
+    await wait(2400);
+
+    /* ── Phase 7: fade out and loop ──────────────────────── */
+    const canvas = document.querySelector('.db-canvas');
+    canvas.style.transition = 'opacity .7s ease';
+    canvas.style.opacity = '0';
+    await wait(900);
+    run();
+  }
+
+  setTimeout(run, 200);
+})();
+</script>
+</body>
+</html>

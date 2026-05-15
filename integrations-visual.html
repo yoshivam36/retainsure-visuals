@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Integrations Visual</title>
+<style>
+:root{
+  --green:#2D6B4A;--mint:#00B368;--mint-bg:#E8F7EF;--mint-ring:#B0E8C8;
+  --sans:"Manrope","Segoe UI",system-ui,sans-serif;
+  --mono:"Lilex","SF Mono","Fira Code",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#D1D5DB;display:flex;align-items:center;
+  justify-content:center;min-height:100vh;font-family:var(--sans)}
+
+/* ── Card shell ──────────────────────────────────────────── */
+.feat-card{background:#fff;border:1px solid #E5E7EB;border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 4px 6px -1px rgba(0,0,0,.08),0 2px 4px -1px rgba(0,0,0,.04);
+  width:540px}
+.feat-bar{display:flex;align-items:center;gap:8px;
+  padding:10px 14px;background:#F9FAFB;border-bottom:1px solid #E5E7EB}
+.feat-dots{display:flex;gap:5px}
+.feat-dot{width:9px;height:9px;border-radius:50%;background:#E5E7EB}
+.feat-url{flex:1;margin-left:8px;height:22px;border-radius:6px;
+  background:#fff;border:1px solid #E5E7EB;
+  display:flex;align-items:center;padding:0 10px;
+  font-family:var(--mono);font-size:10px;color:#9CA3AF}
+
+/* ── Canvas ──────────────────────────────────────────────── */
+.int-canvas{width:100%;height:340px;background:#F9FAFB;
+  position:relative;overflow:hidden}
+
+/* ── Pages ───────────────────────────────────────────────── */
+.int-page{
+  position:absolute;inset:0;background:#F9FAFB;
+  display:flex;flex-direction:column;
+  transition:transform .6s cubic-bezier(0.22,1,0.36,1);
+}
+.int-page-connect{transform:translateY(0)}
+.int-page-connect.exit{transform:translateY(-100%)}
+.int-page-feed{transform:translateY(100%)}
+.int-page-feed.enter{transform:translateY(0)}
+
+/* ════════════════════════════════════════════════════════════
+   PAGE 1 — CONNECT
+════════════════════════════════════════════════════════════ */
+.int-header{
+  height:44px;flex-shrink:0;background:#fff;
+  border-bottom:1px solid #E5E7EB;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;
+}
+.int-header-title{font-size:13px;font-weight:800;color:#111827;letter-spacing:-.01em}
+.int-header-sub{font-size:10px;font-weight:600;color:#9CA3AF}
+
+/* 2×3 grid of integration cards */
+.int-grid{
+  flex:1;display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;padding:12px;
+  align-content:start;
+}
+
+.int-card{
+  background:#fff;border:1.5px solid #E5E7EB;border-radius:12px;
+  padding:10px 14px;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:0 1px 3px rgba(0,0,0,.05);
+  transition:border-color .4s ease,background .4s ease,box-shadow .4s ease;
+  opacity:0;transform:translateY(8px);
+}
+.int-card.vis{
+  opacity:1;transform:translateY(0);
+  transition:border-color .4s ease,background .4s ease,
+             box-shadow .4s ease,opacity .35s ease,transform .35s ease;
+}
+.int-card.connected{
+  border-color:var(--mint-ring);
+  background:linear-gradient(135deg,#FAFFFE 0%,#F0FDF4 100%);
+  box-shadow:0 1px 3px rgba(0,0,0,.05),0 0 0 3px var(--mint-bg);
+}
+
+/* Logo badge */
+.int-logo-wrap{
+  width:36px;height:36px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;overflow:hidden;position:relative;
+}
+.int-logo-img{display:flex;align-items:center;justify-content:center}
+
+.int-card-info{flex:1;min-width:0}
+.int-card-name{font-size:11px;font-weight:700;color:#111827;white-space:nowrap}
+.int-card-type{font-size:9px;color:#9CA3AF;font-weight:500;margin-top:1px}
+
+/* Connect button */
+.int-btn-wrap{flex-shrink:0;display:flex;align-items:center}
+.int-btn{
+  font-family:var(--sans);font-size:10px;font-weight:700;
+  padding:5px 11px;border-radius:7px;border:none;cursor:default;
+  background:#F3F4F6;color:#374151;
+  display:flex;align-items:center;gap:5px;
+  transition:background .35s ease,color .35s ease;
+}
+.int-card.connecting .int-btn{background:#E8F7EF;color:var(--mint)}
+.int-card.connected  .int-btn{background:#DCFCE7;color:#16A34A;pointer-events:none}
+
+/* Spinner */
+.int-spinner{
+  width:11px;height:11px;border-radius:50%;
+  border:2px solid #C0F6DC;border-top-color:var(--mint);
+  animation:int-spin .6s linear infinite;
+  display:none;flex-shrink:0;
+}
+.int-card.connecting .int-spinner{display:block}
+.int-card.connecting .int-btn-label{display:none}
+.int-card.connected  .int-spinner{display:none}
+@keyframes int-spin{to{transform:rotate(360deg)}}
+
+/* ════════════════════════════════════════════════════════════
+   PAGE 2 — LIVE FEED
+════════════════════════════════════════════════════════════ */
+.int-feed-header{
+  flex-shrink:0;padding:16px 16px 12px;background:#fff;
+  border-bottom:1px solid #E5E7EB;
+}
+.int-success-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:13px;font-weight:800;color:#16A34A;
+  margin-bottom:3px;
+}
+.int-success-dot{
+  width:8px;height:8px;border-radius:50%;background:#22C55E;
+  box-shadow:0 0 0 3px #DCFCE7;
+  animation:int-live-pulse 1.5s ease infinite;
+}
+@keyframes int-live-pulse{
+  0%,100%{box-shadow:0 0 0 3px #DCFCE7}
+  50%    {box-shadow:0 0 0 6px rgba(34,197,94,.15)}
+}
+.int-feed-sub{font-size:11px;color:#6B7280;font-weight:500}
+
+/* Feed list */
+.int-feed-list{flex:1;padding:8px 14px;display:flex;flex-direction:column;gap:0;overflow:hidden}
+
+.int-feed-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:9px 0;border-bottom:1px solid #F3F4F6;
+  opacity:0;transform:translateX(8px);
+  transition:opacity .35s ease,transform .35s ease;
+}
+.int-feed-item:last-child{border-bottom:none}
+.int-feed-item.vis{opacity:1;transform:translateX(0)}
+
+.int-feed-dot{
+  width:7px;height:7px;border-radius:50%;
+  flex-shrink:0;margin-top:4px;
+}
+.int-feed-source{
+  font-size:10px;font-weight:700;min-width:68px;
+  flex-shrink:0;margin-top:1px;
+}
+.int-feed-text{font-size:11px;color:#374151;font-weight:500;line-height:1.4}
+
+/* Footer */
+.int-feed-footer{
+  flex-shrink:0;padding:10px 16px;
+  background:#fff;border-top:1px solid #E5E7EB;
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:600;color:#6B7280;
+  opacity:0;transition:opacity .4s ease;
+}
+.int-feed-footer.vis{opacity:1}
+.int-footer-dot{width:7px;height:7px;border-radius:50%;
+  background:var(--mint);box-shadow:0 0 0 3px var(--mint-bg);
+  animation:int-live-pulse 1.5s ease infinite;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="feat-card">
+  <div class="feat-bar">
+    <div class="feat-dots">
+      <div class="feat-dot"></div><div class="feat-dot"></div><div class="feat-dot"></div>
+    </div>
+    <div class="feat-url" id="feat-url">Integrations — Setup</div>
+  </div>
+
+  <div class="int-canvas">
+
+    <!-- ── PAGE 1: Connect ──────────────────────────────── -->
+    <div class="int-page int-page-connect" id="int-page-connect">
+
+      <div class="int-header">
+        <div class="int-header-title">Connect Integrations</div>
+        <div class="int-header-sub">No engineering tickets · Works in minutes</div>
+      </div>
+
+      <div class="int-grid" id="int-grid">
+
+        <!-- HubSpot -->
+        <div class="int-card" id="ic0">
+          <div class="int-logo-wrap" style="background:#fff;border:1px solid #E5E7EB">
+            <img class="int-logo-img" src="assets/hubspot logo.jpg" alt="HubSpot" style="width:28px;height:28px;object-fit:contain;border-radius:4px"/>
+          </div>
+          <div class="int-card-info">
+            <div class="int-card-name">HubSpot</div>
+            <div class="int-card-type">CRM · Contacts</div>
+          </div>
+          <div class="int-btn-wrap">
+            <div class="int-btn">
+              <div class="int-spinner"></div>
+              <span class="int-btn-label">Connect</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Salesforce -->
+        <div class="int-card" id="ic1">
+          <div class="int-logo-wrap" style="background:#fff;border:1px solid #E5E7EB">
+            <img class="int-logo-img" src="assets/Salesforce.com_logo.svg.png" alt="Salesforce" style="width:28px;height:28px;object-fit:contain"/>
+          </div>
+          <div class="int-card-info">
+            <div class="int-card-name">Salesforce</div>
+            <div class="int-card-type">CRM · Pipeline</div>
+          </div>
+          <div class="int-btn-wrap">
+            <div class="int-btn">
+              <div class="int-spinner"></div>
+              <span class="int-btn-label">Connect</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chargebee -->
+        <div class="int-card" id="ic2">
+          <div class="int-logo-wrap" style="background:#fff;border:1px solid #E5E7EB">
+            <img class="int-logo-img" src="assets/Chargebee logo.png" alt="Chargebee" style="width:28px;height:28px;object-fit:contain"/>
+          </div>
+          <div class="int-card-info">
+            <div class="int-card-name">Chargebee</div>
+            <div class="int-card-type">Billing · MRR</div>
+          </div>
+          <div class="int-btn-wrap">
+            <div class="int-btn">
+              <div class="int-spinner"></div>
+              <span class="int-btn-label">Connect</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Amplitude -->
+        <div class="int-card" id="ic3">
+          <div class="int-logo-wrap" style="background:#fff;border:1px solid #E5E7EB">
+            <img class="int-logo-img" src="assets/amplitude logo.jpg" alt="Amplitude" style="width:28px;height:28px;object-fit:contain;border-radius:4px"/>
+          </div>
+          <div class="int-card-info">
+            <div class="int-card-name">Amplitude</div>
+            <div class="int-card-type">Product · Usage</div>
+          </div>
+          <div class="int-btn-wrap">
+            <div class="int-btn">
+              <div class="int-spinner"></div>
+              <span class="int-btn-label">Connect</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zendesk -->
+        <div class="int-card" id="ic4">
+          <div class="int-logo-wrap" style="background:#fff;border:1px solid #E5E7EB">
+            <img class="int-logo-img" src="assets/zendesk logo.png" alt="Zendesk" style="width:28px;height:28px;object-fit:contain"/>
+          </div>
+          <div class="int-card-info">
+            <div class="int-card-name">Zendesk</div>
+            <div class="int-card-type">Support · Tickets</div>
+          </div>
+          <div class="int-btn-wrap">
+            <div class="int-btn">
+              <div class="int-spinner"></div>
+              <span class="int-btn-label">Connect</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slack -->
+        <div class="int-card" id="ic5">
+          <div class="int-logo-wrap" style="background:#4A154B">
+            <img class="int-logo-img" src="assets/Slack_Technologies-Mark2-Dark-Background-Logo.wine.svg" alt="Slack" style="width:24px;height:24px;object-fit:contain"/>
+          </div>
+          <div class="int-card-info">
+            <div class="int-card-name">Slack</div>
+            <div class="int-card-type">Alerts · Notifications</div>
+          </div>
+          <div class="int-btn-wrap">
+            <div class="int-btn">
+              <div class="int-spinner"></div>
+              <span class="int-btn-label">Connect</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── PAGE 2: Live Feed ─────────────────────────────── -->
+    <div class="int-page int-page-feed" id="int-page-feed">
+
+      <div class="int-feed-header">
+        <div class="int-success-badge">
+          <div class="int-success-dot"></div>
+          6 integrations live
+        </div>
+        <div class="int-feed-sub">Data is now flowing into RetainSure</div>
+      </div>
+
+      <div class="int-feed-list" id="int-feed-list"></div>
+
+      <div class="int-feed-footer" id="int-feed-footer">
+        <div class="int-footer-dot"></div>
+        RetainAI is now watching 32 accounts
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  const INTEGRATIONS = [
+    { id:'ic0', name:'HubSpot',    color:'#FF7A59' },
+    { id:'ic1', name:'Salesforce', color:'#00A1E0' },
+    { id:'ic2', name:'Chargebee',  color:'#FF4E00' },
+    { id:'ic3', name:'Amplitude',  color:'#197CE4' },
+    { id:'ic4', name:'Zendesk',    color:'#03363D' },
+    { id:'ic5', name:'Slack',      color:'#4A154B' },
+  ];
+
+  const FEED_ITEMS = [
+    { source:'HubSpot',    color:'#FF7A59', text:'Acme Corp deal stage updated · 3 contacts synced'        },
+    { source:'Chargebee',  color:'#FF4E00', text:'Payment $24,000 confirmed · Acme Corp renewal flagged'   },
+    { source:'Amplitude',  color:'#197CE4', text:'Usage drop −38% detected · Acme Corp · last 30 days'     },
+    { source:'Zendesk',    color:'#03363D', text:'2 tickets opened · Pulsar.io · awaiting resolution'      },
+    { source:'Salesforce', color:'#00A1E0', text:'Renewal flag set · Acme Corp · 42 days remaining'        },
+  ];
+
+  const T = [];
+  const s = (fn,d) => T.push(setTimeout(fn,d));
+  const wait = ms => new Promise(r => s(r,ms));
+
+  function reset(){
+    T.forEach(clearTimeout); T.length = 0;
+
+    // Page 1
+    document.getElementById('int-page-connect').classList.remove('exit');
+    document.getElementById('int-page-feed').classList.remove('enter');
+    document.getElementById('feat-url').textContent = 'Integrations — Setup';
+    document.querySelector('.int-canvas').style.opacity = '1';
+    document.querySelector('.int-canvas').style.transition = '';
+
+    INTEGRATIONS.forEach(({ id }) => {
+      const card = document.getElementById(id);
+      if(!card) return;
+      card.classList.remove('vis','connecting','connected');
+      const label = card.querySelector('.int-btn-label');
+      if(label) label.textContent = 'Connect';
+    });
+
+    // Page 2
+    document.getElementById('int-feed-list').innerHTML = '';
+    document.getElementById('int-feed-footer').classList.remove('vis');
+  }
+
+  async function connectCard(id){
+    const card = document.getElementById(id);
+    if(!card) return;
+    card.classList.add('connecting');
+    await wait(650);
+    card.classList.remove('connecting');
+    card.classList.add('connected');
+    const label = card.querySelector('.int-btn-label');
+    if(label) label.textContent = '✓ Connected';
+  }
+
+  async function run(){
+    reset();
+
+    // Stagger cards appearing
+    INTEGRATIONS.forEach(({ id }, i) => {
+      s(() => document.getElementById(id).classList.add('vis'), i * 120);
+    });
+    await wait(INTEGRATIONS.length * 120 + 300);
+
+    // Connect one by one
+    for(const intg of INTEGRATIONS){
+      await connectCard(intg.id);
+      await wait(200);
+    }
+    await wait(500);
+
+    // Transition to feed page
+    document.getElementById('feat-url').textContent = 'Integrations — Connected';
+    document.getElementById('int-page-connect').classList.add('exit');
+    document.getElementById('int-page-feed').classList.add('enter');
+    await wait(700);
+
+    // Feed items appear one by one
+    const feedList = document.getElementById('int-feed-list');
+    for(const item of FEED_ITEMS){
+      const el = document.createElement('div');
+      el.className = 'int-feed-item';
+      el.innerHTML = `
+        <div class="int-feed-dot" style="background:${item.color}"></div>
+        <div class="int-feed-source" style="color:${item.color}">${item.source}</div>
+        <div class="int-feed-text">${item.text}</div>`;
+      feedList.appendChild(el);
+      await wait(80);
+      el.classList.add('vis');
+      await wait(520);
+    }
+
+    // Footer
+    await wait(200);
+    document.getElementById('int-feed-footer').classList.add('vis');
+    await wait(2400);
+
+    // Fade out and loop
+    const canvas = document.querySelector('.int-canvas');
+    canvas.style.transition = 'opacity .7s ease';
+    canvas.style.opacity = '0';
+    await wait(800);
+    run();
+  }
+
+  setTimeout(run, 200);
+})();
+</script>
+</body>
+</html>
