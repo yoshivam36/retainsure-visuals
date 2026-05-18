@@ -1,566 +1,272 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Agent Builder Visual</title>
+<title>Agent Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
-:root{
-  --bg:#F9FAFB;--panel:#FFFFFF;--panel2:#F3F4F6;
-  --border:#E5E7EB;--border2:#D1D5DB;
-  --green:#2D6B4A;--mint:#00B368;--mint-bg:#E8F7EF;--mint-ring:#B0E8C8;
-  --txt:#111827;--txt2:#374151;--txt3:#6B7280;--txt4:#9CA3AF;
-  --purple:#5A0191;--purple-bg:#F5ECFD;--purple-ring:#CB99EF;
-  --amber:#CA8A04;--amber-bg:#FEF9C3;
-  --blue:#1D4ED8;--blue-bg:#EFF6FF;
-  --gray-bg:#F3F4F6;
-  --sans:"Manrope","Segoe UI",system-ui,sans-serif;
-  --mono:"Lilex","SF Mono","Fira Code",monospace;
-  --sp:cubic-bezier(0.34,1.56,0.64,1);
-}
 *{box-sizing:border-box;margin:0;padding:0}
-/* No centering — renders flush from top-left so iframe clips correctly */
-body{background:#fff;font-family:var(--sans);overflow:hidden}
-
-/* ── Outer card shell ────────────────────────────────────── */
-.feat-card{
-  width:100%;background:#fff;border:none;
-  border-radius:0;overflow:hidden;
-  /* border/radius/shadow handled by parent in index-v7 */
-}
-.feat-bar{
-  display:flex;align-items:center;gap:8px;
-  padding:10px 14px;background:#F9FAFB;border-bottom:1px solid #E5E7EB;
-}
-.feat-dots{display:flex;gap:5px}
-.feat-dot{width:9px;height:9px;border-radius:50%;background:#E5E7EB}
-.feat-url{flex:1;margin-left:8px;height:22px;border-radius:6px;
-  background:#fff;border:1px solid #E5E7EB;
-  display:flex;align-items:center;padding:0 10px;
-  font-family:var(--mono);font-size:10px;color:#9CA3AF}
-
-/* ── Canvas 340px ────────────────────────────────────────── */
-.ab-canvas{
-  width:100%;height:478px;background:var(--bg);
-  display:flex;overflow:hidden;position:relative;
-}
-
-/* ── Sidebar 40px ────────────────────────────────────────── */
-.ab-sidebar{
-  width:40px;flex-shrink:0;background:var(--panel);
-  border-right:1px solid var(--border);
-  display:flex;flex-direction:column;align-items:center;
-  padding:10px 0;gap:10px;
-}
-.ab-logo{
-  width:24px;height:24px;border-radius:6px;
-  background:linear-gradient(135deg,var(--green),var(--mint));
-  display:flex;align-items:center;justify-content:center;
-  font-size:8px;font-weight:800;color:#fff;margin-bottom:2px;
-}
-.ab-nav{width:24px;height:24px;border-radius:6px;
-  background:var(--panel2);display:flex;align-items:center;justify-content:center}
-.ab-nav.on{background:var(--mint-bg)}
-.ab-nav svg{width:12px;height:12px;stroke:var(--txt4);fill:none;stroke-width:1.5;stroke-linecap:round}
-.ab-nav.on svg{stroke:var(--green)}
-
-/* ── Main 500px ──────────────────────────────────────────── */
-.ab-main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;height:100%}
-
-/* ════ PHASE 1: CHAT ════ */
-.ab-chat{
-  position:absolute;inset:0;display:flex;flex-direction:column;
-  background:var(--bg);
-  transition:opacity .45s ease,transform .45s ease;
-}
-.ab-chat.out{opacity:0;transform:translateX(-14px);pointer-events:none}
-
-.ab-chat-bar{
-  height:34px;flex-shrink:0;background:var(--panel);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 12px;gap:8px;
-}
-.ab-chat-title{font-size:11px;font-weight:700;color:var(--txt)}
-.ab-chat-pill{
-  font-family:var(--mono);font-size:8px;font-weight:700;
-  padding:2px 7px;border-radius:10px;
-  background:var(--mint-bg);color:var(--green);
-  border:1px solid var(--mint-ring);
-}
-
-.ab-msgs{
-  flex:1;min-height:0;overflow:hidden;padding:8px 10px;
-  display:flex;flex-direction:column;gap:7px;
-}
-.ab-msg{
-  display:flex;gap:6px;
-  opacity:0;transform:translateY(5px);
-  transition:opacity .3s ease,transform .3s ease;
-}
-.ab-msg.vis{opacity:1;transform:translateY(0)}
-.ab-msg.right{flex-direction:row-reverse}
-
-.ab-av{
-  width:18px;height:18px;border-radius:4px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:6.5px;font-weight:800;color:#fff;margin-top:1px;
-}
-.ab-av.ai{background:linear-gradient(135deg,var(--green),var(--mint))}
-.ab-av.user{background:#4F46E5}
-
-.ab-bub{
-  max-width:84%;padding:6px 9px;
-  font-size:11px;line-height:1.55;color:var(--txt2);
-}
-.ab-bub.ai{
-  background:var(--panel);border:1px solid var(--border);
-  border-left:2px solid var(--mint);
-  border-radius:2px 8px 8px 8px;
-  box-shadow:0 1px 3px rgba(0,0,0,.04);
-}
-.ab-bub.user{
-  background:#EEF2FF;border:1px solid #C7D2FE;
-  border-radius:8px 2px 8px 8px;color:#3730A3;
-}
-.ab-bub .hi{color:var(--green);font-weight:700}
-.ab-bub .q{color:var(--amber);font-weight:700}
-
-/* Typing */
-.ab-typing{display:flex;align-items:center;gap:6px;
-  opacity:0;transition:opacity .25s ease}
-.ab-typing.vis{opacity:1}
-.ab-typing-av{width:18px;height:18px;border-radius:4px;
-  background:linear-gradient(135deg,var(--green),var(--mint));flex-shrink:0}
-.ab-typing-bub{background:var(--panel);border:1px solid var(--border);
-  border-left:2px solid var(--mint);
-  border-radius:2px 8px 8px 8px;padding:6px 10px;
-  display:flex;gap:3px;align-items:center}
-.ab-td{width:5px;height:5px;border-radius:50%;background:var(--txt4);
-  animation:td-b .8s ease-in-out infinite}
-.ab-td:nth-child(2){animation-delay:.16s}
-.ab-td:nth-child(3){animation-delay:.32s}
-@keyframes td-b{0%,60%,100%{transform:translateY(0);opacity:.4}
-  30%{transform:translateY(-3px);opacity:1;background:var(--mint)}}
-
-/* Input bar */
-.ab-input{
-  height:34px;flex-shrink:0;border-top:1px solid var(--border);
-  background:var(--panel);display:flex;align-items:center;gap:7px;padding:0 10px;
-}
-.ab-input-txt{flex:1;font-size:11px;color:var(--txt2);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ab-input-txt.ph{color:var(--txt4)}
-.ab-send-btn{
-  width:22px;height:22px;border-radius:5px;background:var(--green);
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;opacity:0;transition:opacity .2s ease}
-.ab-send-btn.vis{opacity:1}
-.ab-send-btn svg{width:9px;height:9px;stroke:#fff;fill:none;
-  stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-
-/* ════ PHASE 2: FLOWCHART ════ */
-.ab-flow{
-  position:absolute;inset:0;display:flex;flex-direction:column;
-  background:var(--bg);
-  opacity:0;transform:translateX(14px);
-  transition:opacity .45s ease,transform .45s ease;
-  pointer-events:none;
-}
-.ab-flow.vis{opacity:1;transform:translateX(0);pointer-events:auto}
-
-.ab-flow-bar{
-  height:34px;flex-shrink:0;background:var(--panel);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 12px;gap:8px;
-}
-.ab-flow-name{font-size:11px;font-weight:700;color:var(--txt);flex:1}
-.ab-flow-live{
-  font-family:var(--mono);font-size:8px;font-weight:700;
-  padding:2px 7px;border-radius:10px;
-  background:var(--mint-bg);color:var(--green);
-  border:1px solid var(--mint-ring);
-  display:flex;align-items:center;gap:4px;
-}
-.ab-live-dot{width:5px;height:5px;border-radius:50%;background:var(--mint);
-  animation:ab-pulse 1.5s ease-in-out infinite}
-@keyframes ab-pulse{0%,100%{opacity:1}50%{opacity:.3}}
-
-/* Flow canvas — remaining 306px */
-.ab-flow-body{
-  flex:1;overflow:hidden;
-  display:flex;align-items:center;justify-content:center;
-  padding:8px;
-}
-
-/* Node column
-   Budget: 5 nodes×28px + 4 connectors×12px + branch(10+42) = 140+48+52 = 240px ✓ */
-.ab-node-col{display:flex;flex-direction:column;align-items:center}
-
-.ab-node{
-  width:192px;height:28px;padding:0 10px;
-  border-radius:7px;
-  border:1px solid var(--border);
-  background:var(--panel);
-  display:flex;align-items:center;gap:7px;
-  box-shadow:0 1px 3px rgba(0,0,0,.05);
-  flex-shrink:0;
-  opacity:0;transform:translateY(4px) scale(.97);
-  transition:opacity .4s var(--sp),transform .4s var(--sp);
-}
-.ab-node.vis{opacity:1;transform:translateY(0) scale(1)}
-.ab-node.glow{
-  border-color:var(--mint-ring);
-  box-shadow:0 0 0 3px var(--mint-bg),0 1px 3px rgba(0,0,0,.05);
-}
-
-.ab-n-icon{width:18px;height:18px;border-radius:5px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center}
-.ab-n-icon svg{width:10px;height:10px;fill:none;stroke:currentColor;
-  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.ab-n-body{flex:1;min-width:0}
-.ab-n-label{font-size:10px;font-weight:700;color:var(--txt);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1}
-.ab-n-sub{font-size:8px;color:var(--txt3);margin-top:1.5px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1}
-.ab-n-tag{font-family:var(--mono);font-size:7px;font-weight:700;
-  padding:2px 5px;border-radius:6px;flex-shrink:0;white-space:nowrap}
-
-/* Connectors */
-.ab-conn{
-  width:2px;height:12px;background:var(--border2);
-  position:relative;flex-shrink:0;
-  opacity:0;transition:opacity .25s ease;overflow:visible;
-}
-.ab-conn.vis{opacity:1}
-.ab-cdot{
-  position:absolute;width:7px;height:7px;border-radius:50%;
-  background:var(--mint);left:-2.5px;top:-3px;opacity:0;
-  box-shadow:0 0 6px rgba(0,179,104,.5);
-}
-.ab-cdot.run{animation:cdot-fall 1.6s ease-in-out forwards}
-@keyframes cdot-fall{
-  0%{top:-3px;opacity:1}80%{top:9px;opacity:1}100%{top:9px;opacity:0}
-}
-
-/* Branch */
-.ab-branch-row{
-  display:flex;gap:8px;align-items:flex-start;
-  flex-shrink:0;
-}
-.ab-branch-arm{display:flex;flex-direction:column;align-items:center}
-.ab-branch-stem{
-  width:2px;height:10px;background:var(--border2);
-  flex-shrink:0;opacity:0;transition:opacity .25s ease;
-}
-.ab-branch-stem.vis{opacity:1}
-.ab-branch-node{
-  width:88px;padding:6px 8px;border-radius:7px;
-  border:1px solid var(--border);background:var(--panel);
-  box-shadow:0 1px 3px rgba(0,0,0,.05);
-  opacity:0;transform:scale(.92);
-  transition:opacity .4s var(--sp),transform .4s var(--sp);
-  flex-shrink:0;
-}
-.ab-branch-node.vis{opacity:1;transform:scale(1)}
-.ab-branch-node.glow{border-color:var(--mint-ring);box-shadow:0 0 0 3px var(--mint-bg)}
-.ab-branch-lbl{font-size:9px;font-weight:800;line-height:1.2}
-.ab-branch-sub{font-size:7.5px;color:var(--txt3);margin-top:2px;line-height:1.2}
+body{font-family:"Manrope","Segoe UI",system-ui,sans-serif;background:#fff;overflow:hidden;height:504px;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+.topbar{height:38px;flex-shrink:0;background:#F9FAFB;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;padding:0 14px;gap:10px}
+.topbar-left{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.tl-logo{height:16px;width:16px;object-fit:contain;flex-shrink:0}
+.tl-name{font-size:11px;font-weight:700;color:#111827}
+.topbar-url{flex:1;height:20px;background:#fff;border:1px solid #E5E7EB;border-radius:5px;display:flex;align-items:center;padding:0 8px;font-family:"SF Mono","Fira Code",monospace;font-size:9px;color:#9CA3AF}
+.topbar-status{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.ts-dot{width:6px;height:6px;border-radius:50%;background:#D1D5DB;transition:background .3s ease,box-shadow .3s ease}
+.ts-dot.building{background:#F59E0B;animation:pul-a .9s ease-in-out infinite}
+.ts-dot.live{background:#22C55E;animation:pul-g 1.5s ease-in-out infinite}
+@keyframes pul-a{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.35)}50%{box-shadow:0 0 0 4px rgba(245,158,11,0)}}
+@keyframes pul-g{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.35)}50%{box-shadow:0 0 0 4px rgba(34,197,94,0)}}
+.ts-label{font-size:9px;font-weight:700;color:#6B7280;font-family:"SF Mono","Fira Code",monospace;letter-spacing:.03em;transition:color .3s ease}
+.body{flex:1;display:flex;overflow:hidden}
+.left{width:42%;flex-shrink:0;display:flex;flex-direction:column;background:#fff;border-right:1px solid #E5E7EB}
+.left-hdr{height:32px;flex-shrink:0;background:#F9FAFB;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;padding:0 14px}
+.left-hdr-lbl{font-size:9px;font-weight:700;color:#9CA3AF;letter-spacing:.07em;text-transform:uppercase;font-family:"SF Mono","Fira Code",monospace}
+.left-body{flex:1;padding:14px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+.prompt-label{font-size:11px;font-weight:600;color:#374151}
+.prompt-box{background:#F9FAFB;border:1.5px solid #E5E7EB;border-radius:8px;padding:10px 12px;min-height:70px;display:flex;align-items:flex-start;flex-wrap:wrap;position:relative;transition:border-color .25s ease,background .25s ease}
+.prompt-box.typing{border-color:#B0E8C8;background:#FAFFFE}
+.prompt-text{font-size:12px;line-height:1.65;color:#111827;font-weight:500}
+.cursor{font-size:14px;color:#2D6B4A;font-weight:700;animation:blink .85s step-end infinite;margin-left:1px;line-height:1.4}
+.cursor.off{display:none}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.chips{display:flex;flex-direction:column;gap:5px;opacity:0;transition:opacity .35s ease}
+.chips.vis{opacity:1}
+.chip{padding:5px 9px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:6px;font-size:10px;font-weight:600;color:#6B7280;cursor:default;display:flex;align-items:center;gap:5px}
+.chip-icon{font-size:11px}
+.build-wrap{margin-top:auto}
+.build-btn{width:100%;height:36px;background:#009958;color:#fff;border:none;border-radius:8px;font-family:"Manrope","Segoe UI",system-ui,sans-serif;font-size:13px;font-weight:700;cursor:default;display:flex;align-items:center;justify-content:center;gap:7px;opacity:.35;transition:opacity .3s ease,box-shadow .2s ease,transform .12s ease}
+.build-btn svg{width:11px;height:11px;fill:currentColor;flex-shrink:0}
+.build-btn.ready{opacity:1}
+.build-btn.clicked{transform:scale(.97);box-shadow:0 0 0 3px #B0E8C8}
+.build-btn.done{opacity:1;background:#2D6B4A;box-shadow:none;transform:none}
+.right{flex:1;display:flex;flex-direction:column;background:#F9FAFB;overflow:hidden}
+.right-hdr{height:32px;flex-shrink:0;background:#F9FAFB;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;padding:0 14px;justify-content:space-between}
+.right-hdr-title{font-size:11px;font-weight:700;color:#111827}
+.r-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;background:#F3F4F6;border:1px solid #E5E7EB;transition:background .3s ease,border-color .3s ease}
+.r-badge.building{background:#FEF9C3;border-color:#FDE68A}
+.r-badge.live{background:#DCFCE7;border-color:#B0E8C8}
+.rb-dot{width:5px;height:5px;border-radius:50%;background:#D1D5DB;transition:background .3s ease}
+.rb-dot.building{background:#F59E0B;animation:pul-a .9s ease-in-out infinite}
+.rb-dot.live{background:#22C55E}
+.rb-txt{font-size:9px;font-weight:700;color:#6B7280;font-family:"SF Mono","Fira Code",monospace;letter-spacing:.03em;transition:color .3s ease}
+.flow-area{flex:1;display:flex;align-items:center;justify-content:center;padding:10px 14px;overflow:hidden}
+.node-col{display:flex;flex-direction:column;align-items:center}
+.nd{width:208px;height:36px;padding:0 10px;border-radius:8px;border:1.5px solid #E5E7EB;background:#fff;display:flex;align-items:center;gap:8px;box-shadow:0 1px 3px rgba(0,0,0,.05);flex-shrink:0;opacity:0;transform:translateY(6px) scale(.97);transition:opacity .4s cubic-bezier(0.34,1.56,0.64,1),transform .4s cubic-bezier(0.34,1.56,0.64,1),border-color .3s ease,box-shadow .3s ease}
+.nd.vis{opacity:1;transform:translateY(0) scale(1)}
+.nd.glow{border-color:#B0E8C8;box-shadow:0 0 0 3px #E8F7EF,0 1px 3px rgba(0,0,0,.05)}
+.nd-icon{width:22px;height:22px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.nd-icon svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nd-body{flex:1;min-width:0}
+.nd-lbl{font-size:11px;font-weight:700;color:#111827;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nd-sub{font-size:9px;color:#6B7280;line-height:1;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nd-tag{font-size:8px;font-weight:700;padding:2px 6px;border-radius:5px;flex-shrink:0;white-space:nowrap;font-family:"SF Mono","Fira Code",monospace;letter-spacing:.02em}
+.conn{width:2px;height:14px;background:#D1D5DB;flex-shrink:0;position:relative;overflow:visible;opacity:0;transition:opacity .2s ease}
+.conn.vis{opacity:1}
+.cdot{position:absolute;width:8px;height:8px;border-radius:50%;background:#00B368;left:-3px;top:-4px;opacity:0;box-shadow:0 0 6px rgba(0,179,104,.55)}
+.cdot.run{animation:cdot-fall 1.1s ease-in-out forwards}
+@keyframes cdot-fall{0%{top:-4px;opacity:1}80%{top:10px;opacity:1}100%{top:10px;opacity:0}}
+.shell{opacity:1;transition:opacity .5s ease}
+.shell.fade{opacity:0}
 </style>
 </head>
 <body>
-
-<div class="feat-card">
-  <div class="feat-bar">
-    <div class="feat-dots">
-      <div class="feat-dot"></div><div class="feat-dot"></div><div class="feat-dot"></div>
+<div class="shell" id="shell">
+  <div class="topbar">
+    <div class="topbar-left">
+      <img src="https://cdn.prod.website-files.com/69fd4b6acc037ef6b6caa7f9/6a06bceabf76a0279dc8f9cf_retainsure-icon.png" alt="RetainSure" class="tl-logo"/>
+      <span class="tl-name">Agent Builder</span>
     </div>
-    <div class="feat-url">RetainAI — Agent Builder</div>
+    <div class="topbar-url">app.retainsure.com / agents / new</div>
+    <div class="topbar-status">
+      <div class="ts-dot" id="ts-dot"></div>
+      <span class="ts-label" id="ts-label">Ready</span>
+    </div>
   </div>
-
-  <div class="ab-canvas">
-
-    <!-- Sidebar -->
-    <div class="ab-sidebar">
-      <div class="ab-logo" style="background:none;padding:0">
-        <img src="https://cdn.prod.website-files.com/69fd4b6acc037ef6b6caa7f9/6a06bceabf76a0279dc8f9cf_retainsure-icon.png" alt="RetainSure" style="width:24px;height:24px;object-fit:contain"/>
+  <div class="body">
+    <div class="left">
+      <div class="left-hdr"><span class="left-hdr-lbl">Prompt</span></div>
+      <div class="left-body">
+        <div class="prompt-label">What should your agent do?</div>
+        <div class="prompt-box" id="prompt-box">
+          <span class="prompt-text" id="prompt-text"></span><span class="cursor" id="cursor">|</span>
+        </div>
+        <div class="chips" id="chips">
+          <div class="chip"><span class="chip-icon">📊</span>QBR prep automation</div>
+          <div class="chip"><span class="chip-icon">⚠️</span>Churn risk alerts</div>
+          <div class="chip"><span class="chip-icon">📈</span>Upsell outreach</div>
+        </div>
+        <div class="build-wrap">
+          <button class="build-btn" id="build-btn">
+            <svg viewBox="0 0 12 12"><polygon points="2,1 11,6 2,11"/></svg>
+            Build Agent
+          </button>
+        </div>
       </div>
-      <div class="ab-nav"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg></div>
-      <div class="ab-nav on"><svg viewBox="0 0 16 16"><polygon points="8,2 14,14 2,14"/></svg></div>
-      <div class="ab-nav"><svg viewBox="0 0 16 16"><circle cx="8" cy="6" r="3"/><path d="M2 14c0-3.3 2.7-5 6-5s6 1.7 6 5"/></svg></div>
     </div>
-
-    <!-- Main -->
-    <div class="ab-main">
-
-      <!-- PHASE 1: CHAT -->
-      <div class="ab-chat" id="ab-chat">
-        <div class="ab-chat-bar">
-          <span class="ab-chat-title">New Agent</span>
-          <span class="ab-chat-pill">AI Builder</span>
-        </div>
-        <div class="ab-msgs" id="ab-msgs">
-          <div class="ab-typing" id="ab-typing">
-            <div class="ab-typing-av"></div>
-            <div class="ab-typing-bub">
-              <div class="ab-td"></div><div class="ab-td"></div><div class="ab-td"></div>
-            </div>
-          </div>
-        </div>
-        <div class="ab-input">
-          <span class="ab-input-txt ph" id="ab-input-txt">Describe what you want your agent to do…</span>
-          <div class="ab-send-btn" id="ab-send">
-            <svg viewBox="0 0 14 14"><path d="M13 7L1 1l3 6-3 6 12-6z"/></svg>
-          </div>
+    <div class="right">
+      <div class="right-hdr">
+        <span class="right-hdr-title">Renewal Flow</span>
+        <div class="r-badge" id="r-badge">
+          <div class="rb-dot" id="rb-dot"></div>
+          <span class="rb-txt" id="rb-txt">Waiting</span>
         </div>
       </div>
-
-      <!-- PHASE 2: FLOWCHART -->
-      <div class="ab-flow" id="ab-flow">
-        <div class="ab-flow-bar">
-          <span class="ab-flow-name">Churn Risk Email Flow</span>
-          <span class="ab-flow-live"><div class="ab-live-dot"></div>Active</span>
-        </div>
-        <div class="ab-flow-body">
-          <div class="ab-node-col">
-
-            <!-- N1 Trigger -->
-            <div class="ab-node" id="n1">
-              <div class="ab-n-icon" style="background:var(--purple-bg)">
-                <svg viewBox="0 0 16 16" style="stroke:var(--purple)"><circle cx="8" cy="8" r="6"/><polyline points="8,5 8,8 10,10"/></svg>
-              </div>
-              <div class="ab-n-body">
-                <div class="ab-n-label">Daily Trigger</div>
-                <div class="ab-n-sub">Every day · 9 AM</div>
-              </div>
-              <span class="ab-n-tag" style="background:var(--purple-bg);color:var(--purple)">Trigger</span>
-            </div>
-
-            <div class="ab-conn" id="c1"><div class="ab-cdot" id="cd1"></div></div>
-
-            <!-- N2 Filter -->
-            <div class="ab-node" id="n2">
-              <div class="ab-n-icon" style="background:var(--amber-bg)">
-                <svg viewBox="0 0 16 16" style="stroke:var(--amber)"><path d="M2 4h12M5 8h6M7 12h2"/></svg>
-              </div>
-              <div class="ab-n-body">
-                <div class="ab-n-label">Filter Accounts</div>
-                <div class="ab-n-sub">Churn risk &lt; 40% · last 2w</div>
-              </div>
-              <span class="ab-n-tag" style="background:var(--amber-bg);color:var(--amber)">Filter</span>
-            </div>
-
-            <div class="ab-conn" id="c2"><div class="ab-cdot" id="cd2"></div></div>
-
-            <!-- N3 Draft + Send -->
-            <div class="ab-node" id="n3">
-              <div class="ab-n-icon" style="background:var(--mint-bg)">
-                <svg viewBox="0 0 16 16" style="stroke:var(--green)"><rect x="1" y="3" width="14" height="10" rx="1.5"/><polyline points="1,4.5 8,9.5 15,4.5"/></svg>
-              </div>
-              <div class="ab-n-body">
-                <div class="ab-n-label">Draft + Send Email</div>
-                <div class="ab-n-sub">AI-written · 1 day interval</div>
-              </div>
-              <span class="ab-n-tag" style="background:var(--mint-bg);color:var(--green)">AI</span>
-            </div>
-
-            <div class="ab-conn" id="c3"><div class="ab-cdot" id="cd3"></div></div>
-
-            <!-- N4 Wait -->
-            <div class="ab-node" id="n4">
-              <div class="ab-n-icon" style="background:var(--gray-bg)">
-                <svg viewBox="0 0 16 16" style="stroke:var(--txt3)"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>
-              </div>
-              <div class="ab-n-body">
-                <div class="ab-n-label">Wait for Reply</div>
-                <div class="ab-n-sub">Monitor inbox · 7 days</div>
-              </div>
-              <span class="ab-n-tag" style="background:var(--gray-bg);color:var(--txt3)">Wait</span>
-            </div>
-
-            <div class="ab-conn" id="c4"><div class="ab-cdot" id="cd4"></div></div>
-
-            <!-- N5 Branch -->
-            <div class="ab-node" id="n5">
-              <div class="ab-n-icon" style="background:var(--blue-bg)">
-                <svg viewBox="0 0 16 16" style="stroke:var(--blue)"><path d="M8 2v12M4 6l4-4 4 4"/></svg>
-              </div>
-              <div class="ab-n-body">
-                <div class="ab-n-label">Analyse Sentiment</div>
-                <div class="ab-n-sub">Positive / Negative</div>
-              </div>
-              <span class="ab-n-tag" style="background:var(--blue-bg);color:var(--blue)">Branch</span>
-            </div>
-
-            <!-- Branch split -->
-            <div class="ab-branch-row">
-              <div class="ab-branch-arm">
-                <div class="ab-branch-stem" id="bs1"></div>
-                <div class="ab-branch-node" id="bn1">
-                  <div class="ab-branch-lbl" style="color:#16A34A">✓ Positive</div>
-                  <div class="ab-branch-sub">AI drafts follow-up reply</div>
-                </div>
-              </div>
-              <div class="ab-branch-arm">
-                <div class="ab-branch-stem" id="bs2"></div>
-                <div class="ab-branch-node" id="bn2">
-                  <div class="ab-branch-lbl" style="color:#DC2626">✕ Negative</div>
-                  <div class="ab-branch-sub">Slack alert · 4 min delay</div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
+      <div class="flow-area">
+        <div class="node-col" id="node-col"></div>
       </div>
-
     </div>
   </div>
 </div>
-
 <script>
-(function(){
-  const wait = ms => new Promise(r => setTimeout(r, ms));
-  const $    = id => document.getElementById(id);
+const PROMPT = "Send renewal alerts 45 days before contract end";
+const NODES = [
+  {lbl:"Trigger",sub:"45 days before renewal",iconColor:"#3B82F6",iconBg:"#EFF6FF",tag:"Schedule",tagColor:"#3B82F6",tagBg:"#DBEAFE",
+   svg:'<path d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2zm0 2.5v3.2l2.2 1.3"/>'},
+  {lbl:"Filter",sub:"Health score < 70",iconColor:"#7C3AED",iconBg:"#F5F3FF",tag:"Condition",tagColor:"#7C3AED",tagBg:"#EDE9FE",
+   svg:'<path d="M2 4h12M4 8h8M6 12h4"/>'},
+  {lbl:"Generate message",sub:"AI-crafted, personalised",iconColor:"#2D6B4A",iconBg:"#E8F7EF",tag:"AI",tagColor:"#2D6B4A",tagBg:"#D1FAE5",
+   svg:'<path d="M8 2l1.5 3L13 6.5 10 9l1 3.5L8 10.5 5 12.5l1-3.5L3 6.5 6.5 5z"/>'},
+  {lbl:"Send to Slack",sub:"#cs-alerts channel",iconColor:"#4A154B",iconBg:"#F9F0FF",tag:"Deliver",tagColor:"#4A154B",tagBg:"#F3E8FF",
+   svg:'<path d="M2 5h8a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5l-3 2V5z"/>'},
+  {lbl:"Agent Active",sub:"Running on 32 accounts",iconColor:"#16A34A",iconBg:"#DCFCE7",tag:"Live",tagColor:"#16A34A",tagBg:"#BBF7D0",glow:true,
+   svg:'<polyline points="2,8 6,12 14,4"/>'},
+];
 
-  function vis(id)  { const e=$(id); if(e) e.classList.add('vis'); }
-  function unvis(id){ const e=$(id); if(e) e.classList.remove('vis','glow'); }
+function buildNodeEl(n,idx){
+  const div=document.createElement('div');
+  div.className='nd';
+  div.id='nd'+idx;
+  div.innerHTML=`<div class="nd-icon" style="background:${n.iconBg};color:${n.iconColor}"><svg viewBox="0 0 16 16">${n.svg}</svg></div><div class="nd-body"><div class="nd-lbl">${n.lbl}</div><div class="nd-sub">${n.sub}</div></div><div class="nd-tag" style="color:${n.tagColor};background:${n.tagBg}">${n.tag}</div>`;
+  return div;
+}
+function buildConnEl(idx){
+  const div=document.createElement('div');
+  div.className='conn';
+  div.id='cn'+idx;
+  div.innerHTML='<div class="cdot" id="cd'+idx+'"></div>';
+  return div;
+}
 
-  const msgsEl   = $('ab-msgs');
-  const typingEl = $('ab-typing');
-  const inputEl  = $('ab-input-txt');
-  const sendEl   = $('ab-send');
-  const chatEl   = $('ab-chat');
-  const flowEl   = $('ab-flow');
+// Build DOM
+const col=document.getElementById('node-col');
+NODES.forEach((n,i)=>{
+  col.appendChild(buildNodeEl(n,i));
+  if(i<NODES.length-1)col.appendChild(buildConnEl(i));
+});
 
-  /* ── Typewriter ─────────────────────────────────────── */
-  function typeInput(text, speed){
-    return new Promise(res => {
-      inputEl.classList.remove('ph');
-      inputEl.textContent = '';
-      sendEl.classList.remove('vis');
-      let i = 0;
-      const iv = setInterval(() => {
-        inputEl.textContent += text[i++];
-        if(i >= text.length){ clearInterval(iv); res(); }
-      }, speed);
-    });
-  }
+const T=[];
+const s=(fn,d)=>T.push(setTimeout(fn,d));
+const wait=ms=>new Promise(r=>s(r,ms));
 
-  /* ── Add message bubble ─────────────────────────────── */
-  async function addMsg(role, html){
-    typingEl.classList.remove('vis');
-    const msg = document.createElement('div');
-    msg.className = 'ab-msg' + (role==='user'?' right':'');
-    const av = document.createElement('div');
-    av.className = 'ab-av ' + role;
-    av.textContent = role==='ai' ? 'AI' : 'PR';
-    const bub = document.createElement('div');
-    bub.className = 'ab-bub ' + role;
-    bub.innerHTML = html;
-    msg.appendChild(av); msg.appendChild(bub);
-    msgsEl.insertBefore(msg, typingEl);
-    await wait(30);
-    msg.classList.add('vis');
-    msgsEl.scrollTop = msgsEl.scrollHeight;
-  }
-
-  async function showTyping(dur){
-    typingEl.classList.add('vis');
-    msgsEl.scrollTop = msgsEl.scrollHeight;
-    await wait(dur);
-  }
-
-  /* ── Build flowchart ────────────────────────────────── */
-  async function buildFlow(){
-    chatEl.classList.add('out');
-    await wait(480);
-    flowEl.classList.add('vis');
-    await wait(350);
-
-    const nodes = [
-      ['n1',null,null],
-      ['n2','c1','cd1'],
-      ['n3','c2','cd2'],
-      ['n4','c3','cd3'],
-      ['n5','c4','cd4'],
-    ];
-
-    for(const [nId,cId,dId] of nodes){
-      if(cId){ vis(cId); await wait(180); $( dId).classList.add('run'); await wait(600); }
-      vis(nId);
-      $(nId).classList.add('glow');
-      await wait(380);
-      $(nId).classList.remove('glow');
-      await wait(200);
+function reset(){
+  T.forEach(clearTimeout);T.length=0;
+  document.getElementById('prompt-text').textContent='';
+  document.getElementById('cursor').classList.remove('off');
+  document.getElementById('prompt-box').classList.remove('typing');
+  document.getElementById('chips').classList.remove('vis');
+  const btn=document.getElementById('build-btn');
+  btn.classList.remove('ready','clicked','done');
+  document.getElementById('ts-dot').className='ts-dot';
+  document.getElementById('ts-label').textContent='Ready';
+  document.getElementById('ts-label').style.color='';
+  const badge=document.getElementById('r-badge');
+  badge.className='r-badge';
+  document.getElementById('rb-dot').className='rb-dot';
+  document.getElementById('rb-txt').textContent='Waiting';
+  NODES.forEach((_,i)=>{
+    const nd=document.getElementById('nd'+i);
+    if(nd){nd.classList.remove('vis','glow');}
+    if(i<NODES.length-1){
+      const cn=document.getElementById('cn'+i);
+      if(cn)cn.classList.remove('vis');
+      const cd=document.getElementById('cd'+i);
+      if(cd)cd.classList.remove('run');
     }
+  });
+  document.getElementById('shell').classList.remove('fade');
+}
 
-    await wait(300);
-    vis('bs1'); vis('bs2');
-    await wait(180);
-    vis('bn1'); vis('bn2');
-    await wait(200);
-    $('bn1').classList.add('glow');
-    $('bn2').classList.add('glow');
-    await wait(600);
-    $('bn1').classList.remove('glow');
-    $('bn2').classList.remove('glow');
+async function run(){
+  reset();
+  await wait(350);
+
+  // Type prompt
+  const promptEl=document.getElementById('prompt-text');
+  const promptBox=document.getElementById('prompt-box');
+  promptBox.classList.add('typing');
+  for(let i=0;i<=PROMPT.length;i++){
+    await wait(i===0?0:26);
+    promptEl.textContent=PROMPT.slice(0,i);
   }
 
-  /* ── Reset ──────────────────────────────────────────── */
-  function reset(){
-    chatEl.classList.remove('out');
-    flowEl.classList.remove('vis');
-    inputEl.classList.add('ph');
-    inputEl.textContent = 'Describe what you want your agent to do…';
-    sendEl.classList.remove('vis');
-    typingEl.classList.remove('vis');
-    msgsEl.querySelectorAll('.ab-msg').forEach(m=>m.remove());
-    ['n1','n2','n3','n4','n5','c1','c2','c3','c4',
-     'bs1','bs2','bn1','bn2'].forEach(unvis);
-    ['cd1','cd2','cd3','cd4'].forEach(id=>{
-      const e=$(id); if(e) e.classList.remove('run');
-    });
+  // Show chips
+  await wait(250);
+  document.getElementById('chips').classList.add('vis');
+  await wait(300);
+
+  // Button ready
+  document.getElementById('cursor').classList.add('off');
+  const btn=document.getElementById('build-btn');
+  btn.classList.add('ready');
+  await wait(250);
+
+  // Button click
+  btn.classList.add('clicked');
+  await wait(180);
+  btn.classList.remove('clicked');
+  btn.classList.add('done');
+
+  // Status → building
+  await wait(100);
+  const dot=document.getElementById('ts-dot');
+  dot.className='ts-dot building';
+  document.getElementById('ts-label').textContent='Building';
+  document.getElementById('ts-label').style.color='#F59E0B';
+  const badge=document.getElementById('r-badge');
+  badge.className='r-badge building';
+  document.getElementById('rb-dot').className='rb-dot building';
+  document.getElementById('rb-txt').textContent='Building...';
+
+  // Build nodes
+  for(let i=0;i<NODES.length;i++){
+    await wait(i===0?150:350);
+    const nd=document.getElementById('nd'+i);
+    if(nd)nd.classList.add('vis');
+    if(i<NODES.length-1){
+      await wait(180);
+      const cn=document.getElementById('cn'+i);
+      if(cn)cn.classList.add('vis');
+      const cd=document.getElementById('cd'+i);
+      if(cd)cd.classList.add('run');
+    }
   }
 
-  /* ── Main loop ──────────────────────────────────────── */
-  async function run(){
-    reset();
-    await wait(500);
+  // Glow last node + go live
+  await wait(220);
+  const last=document.getElementById('nd'+(NODES.length-1));
+  if(last)last.classList.add('glow');
+  dot.className='ts-dot live';
+  document.getElementById('ts-label').textContent='Live';
+  document.getElementById('ts-label').style.color='#16A34A';
+  badge.className='r-badge live';
+  document.getElementById('rb-dot').className='rb-dot live';
+  document.getElementById('rb-txt').textContent='Active';
 
-    // Type prompt
-    await typeInput('Send mails to companies with least churn rates in last 2 weeks, auto-respond by reply sentiment, Slack alert for negative replies, 1-day mail interval.', 20);
-    sendEl.classList.add('vis');
-    await wait(400);
+  // Hold then fade
+  await wait(900);
+  document.getElementById('shell').classList.add('fade');
+  await wait(550);
 
-    // Send pulse
-    sendEl.style.transform='scale(.84)';
-    await wait(100);
-    sendEl.style.transform='scale(1)';
-    inputEl.classList.add('ph');
-    inputEl.textContent='Describe what you want your agent to do…';
-    sendEl.classList.remove('vis');
+  // Signal completion to parent tab system
+  try{window.parent.postMessage('visual-done','*');}catch(e){}
 
-    await addMsg('user','Send mails to companies with least churn rates in last 2 weeks, auto-respond based on reply sentiment, Slack alert if negative, 1-day interval.');
-    await wait(200);
-    await showTyping(1100);
-    await addMsg('ai','Got it — a few quick things before I build.<br><br><span class="q">1.</span> Which Slack channel for negative alerts?<br><span class="q">2.</span> Churn threshold? (e.g. &lt; 40 out of 100)<br><span class="q">3.</span> Send from your inbox or a shared one?');
-    await wait(700);
-    await addMsg('user','#cs-alerts &nbsp;·&nbsp; below 40 &nbsp;·&nbsp; my inbox');
-    await wait(200);
-    await showTyping(900);
-    await addMsg('ai','Perfect. Building your agent now — <span class="hi">watch it come to life.</span>');
-    await wait(600);
+  await wait(300);
+  run();
+}
 
-    await buildFlow();
-    await wait(2800);
-
-    // Signal parent for tab advance
-    try{ window.parent.postMessage('visual-done','*'); }catch(e){}
-    run();
-  }
-
-  setTimeout(run, 300);
-})();
+run();
 </script>
 </body>
 </html>
