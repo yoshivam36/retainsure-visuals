@@ -567,7 +567,7 @@ async function typeAIText(block, text) {
   el.classList.add('show');
   for (const ch of text) {
     el.textContent += ch;
-    await sleep(13);
+    await sleep(9);
     scrollDown();
   }
 }
@@ -575,7 +575,7 @@ async function typeAIText(block, text) {
 async function animCards(block) {
   const cards = block.querySelectorAll('.r-card,.r-card-wide');
   for (const c of cards) {
-    await sleep(110);
+    await sleep(75);
     c.classList.add('show');
     scrollDown();
   }
@@ -601,7 +601,7 @@ async function resp1(msgs) {
   const group = document.createElement('div');
   msgs.appendChild(group);
   const { block, th } = await showThinking(group, 'Scanning 32 accounts across 6 churn signals…');
-  await sleep(1100);
+  await sleep(700);
   th.remove();
   await typeAIText(block, 'Found 3 accounts showing high churn risk. Combined ARR at risk is $42,800. Two accounts have renewal windows inside 45 days.');
   await sleep(180);
@@ -711,17 +711,14 @@ async function resp4(msgs) {
 }
 
 const FLOW = [
-  { chipId: 'chip0', q: 'Which accounts are at risk this week?',       fn: resp1 },
-  { chipId: 'chip1', q: 'Generate a QBR for Acme Corp',                fn: resp2 },
-  { chipId: 'chip2', q: 'Who is ready for an upsell conversation?',    fn: resp3 },
-  { chipId: null,    q: 'Run renewal playbook for Acme and Pulsar.io', fn: resp4 },
+  { chipId: 'chip0', q: 'Which accounts are at risk this week?', fn: resp1 },
 ];
 
 async function runConversation() {
   document.getElementById('opening').classList.add('show');
-  await sleep(600);
+  await sleep(300);
   document.getElementById('initial-chips').classList.add('show');
-  await sleep(800);
+  await sleep(400);
 
   cursorEl.style.opacity = '1';
   // Start cursor inside the main pane (past the sidebar)
@@ -734,10 +731,10 @@ async function runConversation() {
 
   const chip0 = document.getElementById(FLOW[0].chipId);
   const cr0 = chip0.getBoundingClientRect();
-  await moveTo(cr0.left + cr0.width / 2 - 30, cr0.top + cr0.height / 2 - 15, 800);
-  await moveTo(cr0.left + cr0.width / 2, cr0.top + cr0.height / 2, 400);
+  await moveTo(cr0.left + cr0.width / 2 - 30, cr0.top + cr0.height / 2 - 15, 600);
+  await moveTo(cr0.left + cr0.width / 2, cr0.top + cr0.height / 2, 250);
   chip0.classList.add('hovered');
-  await sleep(400);
+  await sleep(250);
   await clickAnim();
   chip0.classList.remove('hovered');
   chip0.classList.add('used');
@@ -748,26 +745,26 @@ async function runConversation() {
   const ib = document.getElementById('input-box').getBoundingClientRect();
   const ibCenterX = ib.left + ib.width * 0.35;
   const ibCenterY = ib.top + ib.height / 2;
-  await moveTo(ibCenterX, ibCenterY, 700);
+  await moveTo(ibCenterX, ibCenterY, 450);
 
   for (let i = 0; i < FLOW.length; i++) {
     const f = FLOW[i];
     if (i > 0 && f.chipId) document.getElementById(f.chipId).classList.add('used');
 
-    await typeText(f.q, 28);
-    await sleep(350);
+    await typeText(f.q, 18);
+    await sleep(200);
 
     const sendBtn = document.getElementById('ib-send');
     const sr = sendBtn.getBoundingClientRect();
-    await moveTo(sr.left + sr.width / 2, sr.top + sr.height / 2, 300);
+    await moveTo(sr.left + sr.width / 2, sr.top + sr.height / 2, 200);
     await clickAnim();
     resetInput();
     await sleep(150);
-    await moveTo(ibCenterX, ibCenterY, 350);
+    await moveTo(ibCenterX, ibCenterY, 200);
 
     await addUserBubble(f.q);
     await f.fn(msgs);
-    await sleep(i === FLOW.length - 1 ? 2800 : 1400);
+    await sleep(1500);
 
     if (i < FLOW.length - 1) await sleep(400);
   }
